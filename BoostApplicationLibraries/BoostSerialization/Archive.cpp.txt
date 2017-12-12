@@ -1,0 +1,203 @@
+// Archive.cpp
+//
+//Archive
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+using namespace boost::archive;
+
+/*-----------------------------------------------------------------
+//2. Using boost::archive::text_iarchive
+void save()
+{
+	std::ofstream file{ "archive.txt" };
+	text_oarchive oa{ file };
+	int i = 1;
+	oa << i;
+}
+void load()
+{
+	std::ifstream file{ "archive.txt" };
+	text_iarchive ia{ file };
+	int i = 0;
+	ia >> i;
+	std::cout << i << std::endl;
+}
+/*-----------------------------------------------------------------*/
+
+
+/*-----------------------------------------------------------------
+//3. Serializing with a stringstream
+std::stringstream ss;
+void save()
+{
+	text_oarchive oa{ ss };
+	int i = 9;
+	oa << i;
+}
+void load()
+{
+	text_iarchive ia{ ss };
+	int i = 0;
+	ia >> i;
+	std::cout << i << std::endl;
+}
+/*-----------------------------------------------------------------*/
+/*-----------------------------------------------------------------
+//4. Serializing user-defined types with a member function
+std::stringstream ss;
+
+class animal
+{
+public:
+	animal() = default;
+	animal(int legs) :legs_{ legs } {}
+	int legs() const { return legs_; }
+
+private:
+	friend class boost::serialization::access;
+
+	template<typename Archive>
+	void serialize(Archive &ar, const unsigned int version) { ar & legs_; }
+
+	int legs_;
+};
+
+void save()
+{
+	text_oarchive oa{ ss };
+	animal a{ 4 };
+	oa << a;
+}
+
+void load()
+{
+	text_iarchive ia{ ss };
+	animal a{ 9 };
+	ia >> a;
+	std::cout << a.legs() << std::endl;
+}
+/*-----------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------
+//5. Serializing with a free-standing function
+struct animal
+{
+	int legs_;
+
+	animal() = default;
+	animal(int legs) : legs_{ legs } {}
+	int legs() const { return legs_; }
+};
+
+template<typename Archive>
+void serialize(Archive &ar, animal &a, const unsigned int version)
+{
+	ar & a.legs_;
+}
+
+std::stringstream ss;
+void save()
+{
+	text_oarchive oa{ ss };
+	animal a{ 8 };
+	oa << a;
+}
+
+void load()
+{
+	text_iarchive ia{ ss };
+	animal a;
+	ia >> a;
+	std::cout << a.legs_ << std::endl;
+}
+/*-----------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------*/
+//6. Serializing strings
+class animal
+{
+public:
+	animal() = default;
+	animal(int legs, std::string name) :legs_{ legs }, name_{ std::move(name) } {}
+	int legs()const { return legs_; }
+	const std::string& name() const { return name_; }
+
+private:
+	friend class boost::serialization::access;
+
+	template<typename Archive>
+	friend void serialize(Archive &ar, animal &a, const unsigned int verison);
+
+	int legs_;
+	std::string name_;
+};
+
+template<typename Archive>
+void serialize(Archive &ar, animal &a, const unsigned int version)
+{
+	ar & a.legs_;
+	ar & a.name_;
+}
+
+std::stringstream ss;
+
+void save()
+{
+	text_oarchive oa{ ss };
+	animal a{ 4, "cat" };
+	oa << a;
+	//ss.flush();
+	std::cout << ss.str() << std::endl;
+}
+
+void load()
+{
+	text_iarchive ia{ ss };
+	animal a{};
+	ia >> a;
+	std::cout << a.legs() << std::endl;
+	std::cout << a.name() << std::endl;
+}
+/*-----------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------*/
+//
+
+/*-----------------------------------------------------------------*/
+
+int main()
+{
+	/*-----------------------------------------------------------------
+	//1. Using boost::archive::text_oarchive
+	text_oarchive oa{ std::cout };
+	int i = 1;
+	oa << i;
+	/*-----------------------------------------------------------------*/
+
+	/*-----------------------------------------------------------------
+	//2. Using boost::archive::text_iarchive
+	save();
+	load();
+	/*-----------------------------------------------------------------*/
+
+	/*-----------------------------------------------------------------
+	//3. Serializing with a stringstream
+	save();
+	load();
+	/*-----------------------------------------------------------------*/
+
+	/*-----------------------------------------------------------------*/
+	//4. Serializing user-defined types with a member function
+	save();
+	load();
+	/*-----------------------------------------------------------------*/
+
+	std::cout << "\npress a key to exit";
+	std::getchar();
+	return 0;
+}
